@@ -1,0 +1,11 @@
+<div>
+ <ul>
+ <% @entities.each do |x|%>
+   <li>
+     
+     <A href="/<%= x['key'] %>"><%= x['key'] %>(<%= x['ttl'] %>)</a>
+   </li>
+ <% end %>
+ </ul>
+ 
+</div>

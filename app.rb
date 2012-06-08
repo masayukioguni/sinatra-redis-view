@@ -1,0 +1,52 @@
+# dev hint: shotgun login.rb
+
+require 'rubygems'
+require 'sinatra'
+require 'erb'
+require 'redis'
+require 'sinatra/redis'
+require 'json'
+
+# reloader
+set :enviroment, :development
+require 'sinatra/base'
+require 'sinatra/reloader' if development?
+
+helpers do
+  def partial(page, options={})
+    erb page, options.merge!(:layout => false)
+  end
+end
+
+def get_redis_server()
+  target_server = 'redis://127.0.0.1:6379'
+  redisUri = ENV["REDISTOGO_URL"] || target_server
+  puts target_server
+  uri = URI.parse(redisUri)
+  return Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)  
+end
+
+configure do
+  set :public_folder, Proc.new { File.join(root, "static") }
+  enable :sessions
+end
+
+get '/' do
+  redis = get_redis_server()
+  keys = redis.keys('*').sort
+  @entities = []
+  keys.each {|key|
+    entity = {}
+    entity['key'] = key
+    entity['ttl'] = redis.ttl(key)
+    @entities.push(entity)
+  }
+  erb :key_list, :layout => false
+end
+
+get '/:key' do
+  redis = get_redis_server()
+  @key = params[:key]
+  @value = redis.get(@key)
+  erb :value, :layout => false
+end

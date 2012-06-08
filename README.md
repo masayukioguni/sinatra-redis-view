@@ -1,4 +1,4 @@
 sinatra-redis-view
 ==================
 
-sinatrawoでRedisのキー内容を出す
+簡易Redis表示
